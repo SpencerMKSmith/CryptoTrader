@@ -2,6 +2,8 @@ package com.smks.cyclictrading.hitbtctypes;
 
 import java.util.List;
 
+import com.smks.cyclictrading.commontypes.TradeCycle;
+
 import lombok.Data;
 
 @Data
@@ -20,13 +22,15 @@ public class OrderBook
 		this.bid = bid;
 	}
 
-	public Double getVolumeAfterBestOrder(double volume, final boolean lookForBestBid) {
+	public Double getVolumeAfterBestOrder(double volume, final boolean lookForBestBid, final CurrencyPair tradePair) {
 		
 		double startingVolume = volume;
 		
 		if(lookForBestBid && bid.size() == 0) return 0.0;
 		if(!lookForBestBid && ask.size() == 0) return 0.0;
 		if(volume <= 0) return 0.0;
+		
+		double quantityInc = tradePair.getQuantityIncrement();
 		
 		// So basically we want to look for the best price that we can get for our volume
 		if(lookForBestBid) { // Buying base currency
@@ -58,8 +62,19 @@ public class OrderBook
 				if(volume <= 0)
 					return currentOutputVolume;
 
-				if( ( currentAsk.getSize() * currentAsk.getPrice() ) >= volume)
-					currentOutputVolume += volume / currentAsk.getPrice();
+				// How much of the new currency can we buy with the currency we have?
+				// There is a min increment on the new currency so ensure that the volume we ask for is divisible by the increment
+				if( ( currentAsk.getSize() * currentAsk.getPrice() ) >= volume) {
+					double volumeToAskFor = volume / currentAsk.getPrice();
+					volumeToAskFor -= volumeToAskFor % quantityInc;
+
+					// If we can't even buy the min increment, just return what we have so far.
+					if(volumeToAskFor <= 0)
+						return currentOutputVolume;
+					
+					// Else increment how much to ask for
+					currentOutputVolume += volumeToAskFor;
+				}
 				else
 					currentOutputVolume += currentAsk.getSize();
 

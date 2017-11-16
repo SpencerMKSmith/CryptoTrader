@@ -65,9 +65,9 @@ public class TradeCycle implements Runnable {
 			final OrderBook secondTradeOrders = WebServices.getOrderBookForSymbol(secondTrade.getId());
 			final OrderBook thirdTradeOrders = WebServices.getOrderBookForSymbol(thirdTrade.getId());
 			
-			double volumeAfterFirstTrade = firstTradeOrders.getVolumeAfterBestOrder(startingVolume, firstTradeIsAsk);
-			double volumeAfterSecondTrade = secondTradeOrders.getVolumeAfterBestOrder(volumeAfterFirstTrade, secondTradeIsAsk);
-			double volumeAfterThirdTrade = thirdTradeOrders.getVolumeAfterBestOrder(volumeAfterSecondTrade, thirdTradeIsAsk);
+			double volumeAfterFirstTrade = firstTradeOrders.getVolumeAfterBestOrder(startingVolume, firstTradeIsAsk, firstTrade);
+			double volumeAfterSecondTrade = secondTradeOrders.getVolumeAfterBestOrder(volumeAfterFirstTrade, secondTradeIsAsk, secondTrade);
+			double volumeAfterThirdTrade = thirdTradeOrders.getVolumeAfterBestOrder(volumeAfterSecondTrade, thirdTradeIsAsk, thirdTrade);
 			
 			return (volumeAfterThirdTrade - startingVolume) / startingVolume;
 		} catch (Exception e) {

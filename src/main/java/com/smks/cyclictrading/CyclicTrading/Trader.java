@@ -27,7 +27,7 @@ public class Trader {
 		}
 		finishedCount++;
 		//if(finishedCount % 10 == 0 && finishedCount > 0)
-			//System.out.println("Finished: " + finishedCount + ", average: " + (System.currentTimeMillis() - startMillis) / finishedCount);
+		//	System.out.println("Finished: " + finishedCount + ", average: " + (System.currentTimeMillis() - startMillis) / finishedCount);
 	}
 	
 	private static final Double PERCENT_GAIN_THRESHOLD = .004; // .4%
@@ -46,7 +46,7 @@ public class Trader {
 		ExecutorService pool = Executors.newFixedThreadPool(10);
 
 		while(true) {
-			pool = Executors.newFixedThreadPool(10);
+			pool = Executors.newFixedThreadPool(1);
 			for(final TradeCycle tradeCycle : validGraphCycles) {
 				tradeCycle.setStartingVolume(startingAmount);
 				pool.execute(tradeCycle);

@@ -17,7 +17,7 @@ import com.smks.cyclictrading.hitbtctypes.CurrencyPair;
 public class Driver {
 
 	public static final String STARTING_SYMBOL = "USD";
-	public static final Double STARTING_AMOUNT = 10.0;
+	public static final Double STARTING_AMOUNT = 100.0;
 	
     public static void main( String[] args ) throws UnirestException, InterruptedException
     {
