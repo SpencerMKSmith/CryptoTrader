@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.smks.cyclictrading.commontypes.Currency;
+import com.smks.cyclictrading.commontypes.Order;
 import com.smks.cyclictrading.commontypes.TradeCycle;
 import com.smks.cyclictrading.hitbtctypes.CurrencyPair;
 
@@ -18,19 +19,36 @@ import lombok.Data;
 @lombok.RequiredArgsConstructor
 public class Trader {
 
-	private static int finishedCount = 0;
-	private static long startMillis;
-	public static synchronized void incrementCount(double percentGain) {
-		
-		if(percentGain > PERCENT_GAIN_THRESHOLD) {
-			System.out.println(percentGain);
-		}
-		finishedCount++;
-		//if(finishedCount % 10 == 0 && finishedCount > 0)
-		//	System.out.println("Finished: " + finishedCount + ", average: " + (System.currentTimeMillis() - startMillis) / finishedCount);
-	}
+	private static boolean makeTrade = true;
+	private static double bestGain = -2.0;
 	
-	private static final Double PERCENT_GAIN_THRESHOLD = .004; // .4%
+	public static synchronized void performTrade(final TradeCycle tradeCycle, final List<Order> orders, double percentGain) {
+		
+		if(percentGain < bestGain)
+			return;
+		
+		System.out.println(percentGain + ", " + tradeCycle.toString());
+
+		bestGain = percentGain;
+
+		if(!makeTrade)
+			return;
+		makeTrade = false;
+		
+		for(final Order orderToMake : orders) {
+			try {
+				final String response = WebServices.postOrder(orderToMake);
+				System.out.println(response);
+			} catch (UnirestException e) {
+				e.printStackTrace();
+				break;
+			}
+		}
+		
+	}
+
+	
+	public static final Double PERCENT_GAIN_THRESHOLD = -0.03; // .4%
 	
 	private final Map<String, Currency> currencyMap;
 	
@@ -42,11 +60,11 @@ public class Trader {
 		final List<TradeCycle> validGraphCycles = determineValidGraphCycles(startingCurrency);
 		
 		// Determine which trade will give me profit
-		startMillis = System.currentTimeMillis();
-		ExecutorService pool = Executors.newFixedThreadPool(10);
+		ExecutorService pool;
 
+		System.out.println("Starting trades");
 		while(true) {
-			pool = Executors.newFixedThreadPool(1);
+			pool = Executors.newFixedThreadPool(20);
 			for(final TradeCycle tradeCycle : validGraphCycles) {
 				tradeCycle.setStartingVolume(startingAmount);
 				pool.execute(tradeCycle);

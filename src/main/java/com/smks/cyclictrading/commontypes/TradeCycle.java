@@ -1,5 +1,8 @@
 package com.smks.cyclictrading.commontypes;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.smks.cyclictrading.CyclicTrading.Trader;
 import com.smks.cyclictrading.CyclicTrading.WebServices;
@@ -47,15 +50,18 @@ public class TradeCycle implements Runnable {
 		
 		// First get the percent gains that we can achieve from this cycle
 		try {
-			final double percentGain = computePercentGain(this.startingVolume);
-			Trader.incrementCount(percentGain);
+			virtuallyPerformTrade(this.startingVolume);
 		} catch (UnirestException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 	}
 	
-	public Double computePercentGain(final Double startingVolume) throws UnirestException {
+	/*
+	 * This function will use the current order books for each of the currency pairs in this cycle
+	 * and analyze the gain that could be made from 
+	 */
+	public void virtuallyPerformTrade(final Double startingVolume) throws UnirestException {
 
 		try {
 			// TODO: Create faster lookup that will keep these values for some determined amount of time
@@ -65,14 +71,25 @@ public class TradeCycle implements Runnable {
 			final OrderBook secondTradeOrders = WebServices.getOrderBookForSymbol(secondTrade.getId());
 			final OrderBook thirdTradeOrders = WebServices.getOrderBookForSymbol(thirdTrade.getId());
 			
-			double volumeAfterFirstTrade = firstTradeOrders.getVolumeAfterBestOrder(startingVolume, firstTradeIsAsk, firstTrade);
-			double volumeAfterSecondTrade = secondTradeOrders.getVolumeAfterBestOrder(volumeAfterFirstTrade, secondTradeIsAsk, secondTrade);
-			double volumeAfterThirdTrade = thirdTradeOrders.getVolumeAfterBestOrder(volumeAfterSecondTrade, thirdTradeIsAsk, thirdTrade);
+			if(Objects.isNull(firstTradeOrders) || Objects.isNull(secondTradeOrders) || Objects.isNull(thirdTradeOrders))
+				return;
 			
-			return (volumeAfterThirdTrade - startingVolume) / startingVolume;
+			final Order firstOrder = firstTradeOrders.getBestOrder(startingVolume, firstTradeIsAsk, firstTrade);
+			if(firstOrder.getQuantity() <= 0) return;
+			final Order secondOrder = secondTradeOrders.getBestOrder(firstOrder.getQuantity(), secondTradeIsAsk, secondTrade);
+			if(firstOrder.getQuantity() <= 0) return;
+			final Order thirdOrder = thirdTradeOrders.getBestOrder(secondOrder.getQuantity(), thirdTradeIsAsk, thirdTrade);
+			if(firstOrder.getQuantity() <= 0) return;
+
+			// Compute potential percent gain from performing this cycle
+			double percentGain = (thirdOrder.getQuantity() - startingVolume) / startingVolume;
+			
+			// If the gain is better than the threshold given by the trader, give the orders to the trader
+			//	to perform the trade (method is sychronized across all threads)
+			if(percentGain > Trader.PERCENT_GAIN_THRESHOLD)
+				Trader.performTrade(this, Arrays.asList(firstOrder, secondOrder, thirdOrder ), percentGain);
+			
 		} catch (Exception e) {
-			e.printStackTrace();
-			return 0.0;
 		}
 	}
 
