@@ -89,6 +89,8 @@ public class TradeCycle implements Runnable {
 			if(percentGain > Trader.PERCENT_GAIN_THRESHOLD)
 				Trader.performTrade(this, Arrays.asList(firstOrder, secondOrder, thirdOrder ), percentGain);
 			
+			if(percentGain > -0.02)
+				System.out.println(percentGain + ", " + this.toString());
 		} catch (Exception e) {
 		}
 	}

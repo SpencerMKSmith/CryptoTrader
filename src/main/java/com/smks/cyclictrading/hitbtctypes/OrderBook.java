@@ -58,7 +58,7 @@ public class OrderBook
 				
 				// We will keep decreasing the volume, once it hits 0 return what we have found
 				if(volumeLeft <= 0)
-					return currentOutputVolume - (currentOutputVolume * .001); // Return the volume and remember to remove the fee
+					return currentOutputVolume; // Return the volume and remember to remove the fee
 				
 				// If the bid we are looking at will fill all that we want, simply add the volume that we get from
 				//	this trade
@@ -73,7 +73,7 @@ public class OrderBook
 			}
 		} else { // Selling base currency
 			double currentOutputVolume = 0.0;
-			volumeLeft -= (volumeLeft * .001); // Remove the fee before we start TODO: Check this
+			//volumeLeft -= (volumeLeft * .001); // Remove the fee before we start TODO: Check this
 			for(final Ask currentAsk : this.ask) {
 				
 				if(volumeLeft <= 0)
