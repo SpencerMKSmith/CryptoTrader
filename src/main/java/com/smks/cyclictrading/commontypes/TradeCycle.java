@@ -75,22 +75,23 @@ public class TradeCycle implements Runnable {
 				return;
 			
 			final Order firstOrder = firstTradeOrders.getBestOrder(startingVolume, firstTradeIsAsk, firstTrade);
-			if(firstOrder.getQuantity() <= 0) return;
-			final Order secondOrder = secondTradeOrders.getBestOrder(firstOrder.getQuantity(), secondTradeIsAsk, secondTrade);
-			if(firstOrder.getQuantity() <= 0) return;
-			final Order thirdOrder = thirdTradeOrders.getBestOrder(secondOrder.getQuantity(), thirdTradeIsAsk, thirdTrade);
-			if(firstOrder.getQuantity() <= 0) return;
+			if(firstOrder.getAfterQuantity() <= 0) return;
+			final Order secondOrder = secondTradeOrders.getBestOrder(firstOrder.getAfterQuantity(), secondTradeIsAsk, secondTrade);
+			if(secondOrder.getAfterQuantity() <= 0) return;
+			final Order thirdOrder = thirdTradeOrders.getBestOrder(secondOrder.getAfterQuantity(), thirdTradeIsAsk, thirdTrade);
+			if(thirdOrder.getAfterQuantity() <= 0) return;
 
 			// Compute potential percent gain from performing this cycle
-			double percentGain = (thirdOrder.getQuantity() - startingVolume) / startingVolume;
+			double quantityOfStartingCurrencyAfterTrades = thirdOrder.getAfterQuantity() + firstOrder.getCurrencyRemainder();
+			double percentGain = (quantityOfStartingCurrencyAfterTrades - startingVolume) / startingVolume;
 			
 			// If the gain is better than the threshold given by the trader, give the orders to the trader
 			//	to perform the trade (method is sychronized across all threads)
 			if(percentGain > Trader.PERCENT_GAIN_THRESHOLD)
 				Trader.performTrade(this, Arrays.asList(firstOrder, secondOrder, thirdOrder ), percentGain);
-			
-			if(percentGain > -0.02)
-				System.out.println(percentGain + ", " + this.toString());
+
+			Trader.incrementCount();
+
 		} catch (Exception e) {
 		}
 	}

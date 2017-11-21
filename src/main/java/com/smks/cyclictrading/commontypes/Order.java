@@ -1,5 +1,7 @@
 package com.smks.cyclictrading.commontypes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Data;
 
 @Data
@@ -8,8 +10,12 @@ public class Order {
 	
 	private final String symbol;
 	private final String side; // Buy or Sell
-	private final Double quantity;
-	//private final Double price;
+	private double quantity;
+	@JsonIgnore private double afterQuantity;
+	
+	// Due to rounding and other factors, there may be some amount of the currency that was held previous to the trade left
+	//	after the trade is done.
+	@JsonIgnore private double currencyRemainder; 
 	private final String type = "market";
 	private final String timeInForce = "FOK";
 	

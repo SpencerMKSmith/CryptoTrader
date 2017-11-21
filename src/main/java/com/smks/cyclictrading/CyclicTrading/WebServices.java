@@ -60,6 +60,7 @@ public class WebServices {
 	 */
 	public static String postOrder(final Order order) throws UnirestException {
 		
+		System.out.println("Order: " + order.toString());
 		HttpResponse<String> jsonResponse = Unirest.post("https://api.hitbtc.com/api/2/order")
 				.header("Authorization", getAuthHeader())
 				.header("Content-Type", "application/json")

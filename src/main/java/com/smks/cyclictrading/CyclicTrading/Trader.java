@@ -21,16 +21,22 @@ public class Trader {
 
 	private static boolean makeTrade = true;
 	private static double bestGain = -2.0;
+	public static long startingMillis = System.currentTimeMillis();
+	public static int count = 0;
 	
+	public static synchronized void incrementCount() {
+		count++;
+		if(count % 100 == 0)
+			System.out.println("Average over: " + count + ", " + ((System.currentTimeMillis() - startingMillis) / count));
+	}
 	public static synchronized void performTrade(final TradeCycle tradeCycle, final List<Order> orders, double percentGain) {
 		
-		if(percentGain < bestGain)
-			return;
+
+		if(percentGain < bestGain) return;
 		
 		System.out.println(percentGain + ", " + tradeCycle.toString());
-
 		bestGain = percentGain;
-
+		
 		if(!makeTrade)
 			return;
 		makeTrade = false;
@@ -38,7 +44,6 @@ public class Trader {
 		for(final Order orderToMake : orders) {
 			try {
 				final String response = WebServices.postOrder(orderToMake);
-				System.out.println(response);
 			} catch (UnirestException e) {
 				e.printStackTrace();
 				break;
@@ -48,7 +53,7 @@ public class Trader {
 	}
 
 	
-	public static final Double PERCENT_GAIN_THRESHOLD = -0.03; // .4%
+	public static final Double PERCENT_GAIN_THRESHOLD = -0.005; // .4%
 	
 	private final Map<String, Currency> currencyMap;
 	
@@ -60,16 +65,13 @@ public class Trader {
 		final List<TradeCycle> validGraphCycles = determineValidGraphCycles(startingCurrency);
 		
 		// Determine which trade will give me profit
-		ExecutorService pool;
 
 		System.out.println("Starting trades");
 		while(true) {
-			pool = Executors.newFixedThreadPool(20);
+			ExecutorService pool = Executors.newFixedThreadPool(50);
 			for(final TradeCycle tradeCycle : validGraphCycles) {
 				tradeCycle.setStartingVolume(startingAmount);
 				pool.execute(tradeCycle);
-				//if(percentGain >= PERCENT_GAIN_THRESHOLD)
-				//	System.out.println(percentGain + tradeCycle.toString() + ", Date: " + System.currentTimeMillis());
 			}
 			pool.shutdown();
 			pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);

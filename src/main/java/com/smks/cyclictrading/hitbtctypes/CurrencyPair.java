@@ -22,6 +22,10 @@ public class CurrencyPair {
     public Double getQuantityIncrement() {
     	return Double.parseDouble(this.quantityIncrement);
     }
+    public Double getTakeLiquidityRate() {
+    	return Double.parseDouble(takeLiquidityRate);
+    }
+    
     public Currency getOppositeCurrency(final String currency) {
     	if(this.baseCurrency.equals(currency))
     		return quoteCurrencyObject;
