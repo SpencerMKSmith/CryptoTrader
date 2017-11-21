@@ -24,11 +24,7 @@ public class Trader {
 	public static long startingMillis = System.currentTimeMillis();
 	public static int count = 0;
 	
-	public static synchronized void incrementCount() {
-		count++;
-		if(count % 100 == 0)
-			System.out.println("Average over: " + count + ", " + ((System.currentTimeMillis() - startingMillis) / count));
-	}
+
 	public static synchronized void performTrade(final TradeCycle tradeCycle, final List<Order> orders, double percentGain) {
 		
 
@@ -41,19 +37,19 @@ public class Trader {
 			return;
 		makeTrade = false;
 		
-		for(final Order orderToMake : orders) {
-			try {
-				final String response = WebServices.postOrder(orderToMake);
-			} catch (UnirestException e) {
-				e.printStackTrace();
-				break;
-			}
-		}
-		
+//		for(final Order orderToMake : orders) {
+//			try {
+//				final String response = WebServices.postOrder(orderToMake);
+//			} catch (UnirestException e) {
+//				e.printStackTrace();
+//				break;
+//			}
+//		}
+		System.out.println("Done trade!");
 	}
 
 	
-	public static final Double PERCENT_GAIN_THRESHOLD = -0.005; // .4%
+	public static final Double PERCENT_GAIN_THRESHOLD = -0.01; // .4%
 	
 	private final Map<String, Currency> currencyMap;
 	
