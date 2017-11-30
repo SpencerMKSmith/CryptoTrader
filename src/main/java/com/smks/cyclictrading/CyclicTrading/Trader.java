@@ -11,6 +11,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.smks.cyclictrading.commontypes.Currency;
 import com.smks.cyclictrading.commontypes.Order;
 import com.smks.cyclictrading.commontypes.TradeCycle;
+import com.smks.cyclictrading.hitbtctypes.ActiveOrder;
 import com.smks.cyclictrading.hitbtctypes.CurrencyPair;
 
 import lombok.Data;
@@ -28,28 +29,33 @@ public class Trader {
 	public static synchronized void performTrade(final TradeCycle tradeCycle, final List<Order> orders, double percentGain) {
 		
 
-		if(percentGain < bestGain) return;
-		
+
+		if(percentGain <= bestGain) return;
 		System.out.println(percentGain + ", " + tradeCycle.toString());
+
 		bestGain = percentGain;
+		
+		if(percentGain < 0.0) return;
 		
 		if(!makeTrade)
 			return;
 		makeTrade = false;
 		
-//		for(final Order orderToMake : orders) {
-//			try {
-//				final String response = WebServices.postOrder(orderToMake);
-//			} catch (UnirestException e) {
-//				e.printStackTrace();
-//				break;
-//			}
-//		}
+		for(final Order orderToMake : orders) {
+			try {
+				ActiveOrder response = WebServices.postOrder(orderToMake);
+				System.out.println(response);
+			} catch (Exception e) {
+				e.printStackTrace();
+				break;
+			}
+		}
+		
 		System.out.println("Done trade!");
 	}
 
 	
-	public static final Double PERCENT_GAIN_THRESHOLD = -0.01; // .4%
+	public static final Double PERCENT_GAIN_THRESHOLD = -0.9; // .4%
 	
 	private final Map<String, Currency> currencyMap;
 	

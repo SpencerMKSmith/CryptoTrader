@@ -56,21 +56,42 @@ public class WebServices {
 	}
 	
 	/*
-	 * 
+	 * Won't return until an order is filled
 	 */
-	public static String postOrder(final Order order) throws UnirestException {
+	public static ActiveOrder postOrder(final Order order) throws UnirestException {
 		
 		System.out.println("Order: " + order.toString());
-		HttpResponse<String> jsonResponse = Unirest.post("https://api.hitbtc.com/api/2/order")
+		HttpResponse<ActiveOrder> response = Unirest.post("https://api.hitbtc.com/api/2/order")
 				.header("Authorization", getAuthHeader())
 				.header("Content-Type", "application/json")
 				.body(order)
-				.asString();
+				.asObject(ActiveOrder.class);
 
-		System.out.println(jsonResponse.getBody());
-		return jsonResponse.getBody();
+		ActiveOrder activeOrder = response.getBody();
+		String orderId = activeOrder.getId();
+		
+		while(!"filled".equals(activeOrder.getStatus())) {
+			try{
+				activeOrder = WebServices.getActiveOrder(orderId);
+			} catch (Exception e) {
+				return activeOrder;
+			}
+		}
+		
+		System.out.println(activeOrder);
+		return activeOrder;
 	}
 	
+	/*
+	 * Gets an active order by orderId
+	 */
+	public static ActiveOrder getActiveOrder(final String orderId) throws UnirestException {
+
+		HttpResponse<ActiveOrder> response = Unirest.get("https://api.hitbtc.com/api/2/order/" + orderId)
+				.header("Authorization", getAuthHeader())
+				.asObject(ActiveOrder.class);
+		return response.getBody();
+	}
 	
 	private static String getAuthHeader() {
 		return "Basic " + Base64.getEncoder().encodeToString((apiKey + ":" + secret).getBytes());

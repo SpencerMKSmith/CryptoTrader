@@ -35,23 +35,26 @@ public class OrderBook
 	}
 	
 	public Order getPredictedBuyOrder(double startingVolume, final CurrencyPair tradePair) {
-		Order predictedOrder = new Order(tradePair.getId(), "buy");
+		Order predictedOrder = new Order(tradePair.getId(), "buy", this.ask.get(0).getPrice());
+		double quantityInc = tradePair.getQuantityIncrement();
+		predictedOrder.setQuantityInc(quantityInc);
 		
 		double volumeLeftToBuyWith = startingVolume;
-		double quantityInc = tradePair.getQuantityIncrement();
 		double takeRate = tradePair.getTakeLiquidityRate();
 		
 		double quantityOfNewCurrency = 0.0;
 		
 		// For each ask until all of our input currency is used, we will simulate buying currency at the
 		//	best price
+		double currentAskPrice = this.ask.get(0).getPrice();
 		for(final Ask currentAsk : this.ask) {
 			double currentAskSize = currentAsk.getSize();
-			double currentAskPrice = currentAsk.getPrice();
+			//double currentAskPrice = currentAsk.getPrice();
 			double minVolumeNeeded = (quantityInc * currentAskPrice) * (1 + takeRate); // This is the value needed to buy the smallest increment
 			
 			// If we have used all of our input currency that we can, return the Order predictions
 			if(volumeLeftToBuyWith < minVolumeNeeded) {
+				quantityOfNewCurrency -= quantityOfNewCurrency % quantityInc;
 				predictedOrder.setQuantity(quantityOfNewCurrency);
 				predictedOrder.setAfterQuantity(quantityOfNewCurrency);
 				predictedOrder.setCurrencyRemainder(volumeLeftToBuyWith);
@@ -75,15 +78,11 @@ public class OrderBook
 			// If we don't have sufficient funds, decrease the buy quantity
 			// TODO: Fix this, it has been seen to loop many times until it finds a good amount
 			//		 
-			int count = 0;
 			while(totalTradeCostAmount > volumeLeftToBuyWith) {
 				quantityToBuy -= quantityInc;
 				baseTradeCostAmount = quantityToBuy * currentAskPrice;
 				feeCost = baseTradeCostAmount * takeRate;
 				totalTradeCostAmount = baseTradeCostAmount + feeCost;
-				count++;
-				//if(count > 1)
-				//	System.out.println("Looped " + count + " times.");
 			}
 			
 			if(totalTradeCostAmount > volumeLeftToBuyWith)
@@ -99,19 +98,20 @@ public class OrderBook
 	}
 	
 	public Order getPredictedSellOrder(double startingVolume, final CurrencyPair tradePair) {
-		Order predictedOrder = new Order(tradePair.getId(), "sell");
-		
+		Order predictedOrder = new Order(tradePair.getId(), "sell", this.bid.get(0).getPrice());
 		double quantityInc = tradePair.getQuantityIncrement();
+		predictedOrder.setQuantityInc(quantityInc);
+		
 		double volumeThatCantBeSold = startingVolume % quantityInc;
 		double volumeLeftToSell = startingVolume - volumeThatCantBeSold;
 		double takeRate = tradePair.getTakeLiquidityRate();
 		
 		double quantityOfNewCurrency = 0.0;
 		double quantitySold = 0.0;
+		final double currentBidPrice = this.bid.get(0).getPrice();
 		for(final Bid currentBid : this.bid) {
 			final double currentBidSize = currentBid.getSize();
-			final double currentBidPrice = currentBid.getPrice();
-			
+			//final double currentBidPrice = currentBid.getPrice();
 			// If we have used all of our input currency that we can, return the Order predictions
 			if(volumeLeftToSell < quantityInc) {
 				predictedOrder.setQuantity(quantitySold);
@@ -126,7 +126,7 @@ public class OrderBook
 			double basePaymentAfterSelling = quantityToSellAtThisPrice * currentBidPrice;
 			double feeCost = basePaymentAfterSelling * takeRate;
 			double totalOutputQuantity = basePaymentAfterSelling - feeCost;
-
+			totalOutputQuantity -= totalOutputQuantity % tradePair.getTickSize();
 			// Decrease the amount we have left to trade
 			volumeLeftToSell -= quantityToSellAtThisPrice;
 			

@@ -10,14 +10,16 @@ public class Order {
 	
 	private final String symbol;
 	private final String side; // Buy or Sell
+	private final String type = "limit";
+	private final String timeInForce = "GTC";
+	private final double price;
 	private double quantity;
 	@JsonIgnore private double afterQuantity;
 	
 	// Due to rounding and other factors, there may be some amount of the currency that was held previous to the trade left
 	//	after the trade is done.
 	@JsonIgnore private double currencyRemainder; 
-	private final String type = "market";
-	private final String timeInForce = "FOK";
+	@JsonIgnore private double quantityInc;
 	
 	public String getUrlString() {
 		final StringBuilder builder = new StringBuilder();
@@ -33,6 +35,10 @@ public class Order {
 			.append("FOK");
 
 		return builder.toString();
+	}
+
+	public void decreaseQuantity() {
+		this.quantity -= this.quantityInc;
 	}
 	
 }

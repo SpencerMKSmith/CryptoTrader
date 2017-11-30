@@ -18,14 +18,13 @@ import com.smks.cyclictrading.hitbtctypes.CurrencyPair;
 
 public class Driver {
 
-	public static final String STARTING_SYMBOL = "BTC";
-	public static final Double STARTING_AMOUNT = 0.001;
+	public static final String STARTING_SYMBOL = "ETH";
+	public static final Double STARTING_AMOUNT = 0.01;
 	
 	final static Logger logger = Logger.getLogger(Driver.class);
 	
     public static void main( String[] args ) throws UnirestException, InterruptedException
     {
-    	logger.error("Test");
     	// Setup unirest so that the mapping to custom objects works correctly
     	setupUnirest();
     	
