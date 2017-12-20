@@ -48,7 +48,7 @@ public class OrderBook
 		//	best price
 		double currentAskPrice = this.ask.get(0).getPrice();
 		for(final Ask currentAsk : this.ask) {
-			double currentAskSize = currentAsk.getSize();
+			double currentAskSize = Double.MAX_VALUE;
 			//double currentAskPrice = currentAsk.getPrice();
 			double minVolumeNeeded = (quantityInc * currentAskPrice) * (1 + takeRate); // This is the value needed to buy the smallest increment
 			
@@ -110,7 +110,7 @@ public class OrderBook
 		double quantitySold = 0.0;
 		final double currentBidPrice = this.bid.get(0).getPrice();
 		for(final Bid currentBid : this.bid) {
-			final double currentBidSize = currentBid.getSize();
+			final double currentBidSize = Double.MAX_VALUE;
 			//final double currentBidPrice = currentBid.getPrice();
 			// If we have used all of our input currency that we can, return the Order predictions
 			if(volumeLeftToSell < quantityInc) {

@@ -18,8 +18,8 @@ import com.smks.cyclictrading.hitbtctypes.CurrencyPair;
 
 public class Driver {
 
-	public static final String STARTING_SYMBOL = "ETH";
-	public static final Double STARTING_AMOUNT = 0.01;
+	public static final String STARTING_SYMBOL = "BTC";
+	public static final Double STARTING_AMOUNT = 0.0014;
 	
 	final static Logger logger = Logger.getLogger(Driver.class);
 	

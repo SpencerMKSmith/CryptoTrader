@@ -1,6 +1,8 @@
 package com.smks.cyclictrading.CyclicTrading;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -24,22 +26,23 @@ public class Trader {
 	private static double bestGain = -2.0;
 	public static long startingMillis = System.currentTimeMillis();
 	public static int count = 0;
-	
+	private static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS");
+
 
 	public static synchronized void performTrade(final TradeCycle tradeCycle, final List<Order> orders, double percentGain) {
 		
 
+		System.out.println(percentGain + ", " + tradeCycle.toString() + ", time: " + sdf.format(new Date()));
 
-		if(percentGain <= bestGain) return;
-		System.out.println(percentGain + ", " + tradeCycle.toString());
+		//if(percentGain <= bestGain) return;
 
-		bestGain = percentGain;
+		//bestGain = percentGain;
 		
-		if(percentGain < 0.0) return;
+		if(percentGain < 0.002) return;
 		
-		if(!makeTrade)
-			return;
-		makeTrade = false;
+//		if(!makeTrade)
+//			return;
+//		makeTrade = false;
 		
 		for(final Order orderToMake : orders) {
 			try {
@@ -55,7 +58,7 @@ public class Trader {
 	}
 
 	
-	public static final Double PERCENT_GAIN_THRESHOLD = -0.9; // .4%
+	public static final Double PERCENT_GAIN_THRESHOLD = 0.0; // .4%
 	
 	private final Map<String, Currency> currencyMap;
 	
@@ -70,7 +73,7 @@ public class Trader {
 
 		System.out.println("Starting trades");
 		while(true) {
-			ExecutorService pool = Executors.newFixedThreadPool(50);
+			ExecutorService pool = Executors.newFixedThreadPool(30);
 			for(final TradeCycle tradeCycle : validGraphCycles) {
 				tradeCycle.setStartingVolume(startingAmount);
 				pool.execute(tradeCycle);

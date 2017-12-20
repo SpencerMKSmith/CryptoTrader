@@ -60,24 +60,34 @@ public class WebServices {
 	 */
 	public static ActiveOrder postOrder(final Order order) throws UnirestException {
 		
-		System.out.println("Order: " + order.toString());
-		HttpResponse<ActiveOrder> response = Unirest.post("https://api.hitbtc.com/api/2/order")
-				.header("Authorization", getAuthHeader())
-				.header("Content-Type", "application/json")
-				.body(order)
-				.asObject(ActiveOrder.class);
+		System.out.println("Order before: " + order.toString());
+		ActiveOrder activeOrder = null;
 
-		ActiveOrder activeOrder = response.getBody();
-		String orderId = activeOrder.getId();
+		while(activeOrder == null) {
+			try {
+				HttpResponse<ActiveOrder> response = Unirest.post("https://api.hitbtc.com/api/2/order")
+						.header("Authorization", getAuthHeader())
+						.header("Content-Type", "application/json")
+						.body(order)
+						.asObject(ActiveOrder.class);
+				activeOrder = response.getBody();
+			} catch (Exception e) {
+				order.decreaseQuantity();
+				//System.out.println("Decreased quantity: " + order.getQuantity());
+			}
+		}
+		System.out.println("Order after: " + order.toString());
+
+		String orderId = activeOrder.getClientOrderId();
 		
-		while(!"filled".equals(activeOrder.getStatus())) {
+		while(!activeOrder.getStatus().equals("filled")) {
 			try{
 				activeOrder = WebServices.getActiveOrder(orderId);
 			} catch (Exception e) {
 				return activeOrder;
 			}
 		}
-		
+		System.out.println("Completed order with status: " + activeOrder.getStatus());
 		System.out.println(activeOrder);
 		return activeOrder;
 	}
