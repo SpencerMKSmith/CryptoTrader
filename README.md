@@ -9,6 +9,7 @@
   * Future: support web sockets https://github.com/bitrich-info/xchange-stream that should be able to detect good cycles more quickly
 * Keep track of everything in trading accounts and show how much is being made
 * Provide the possibility to execute more than 3 trades in a cycle, this has a low probabilty to provide good returns as each trade charges a fee, but it is worth taking a look at.
+* Worker machines: One of the largest bottlenecks in finding profitable trade cycles is network call time.  It can take up to 30 seconds to check all 3 currency cycles from a given origin.  Within those 30 seconds many opportunites can be missed and exploited by others.  One option would be to have multiple worker nodes whos only purpose is to search for cycles quickly and then report back to a master node who will execute the trade when a profitable cycle is found.  The problem may also be remidied by a web socket implementation but I don't know if it's possible or feasible to listen on 300+ web streams simultaneously.
 
 ## Trading Strategy
 * Cyclical Trading
